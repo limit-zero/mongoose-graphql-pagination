@@ -3,14 +3,12 @@ const deepMerge = require('deepmerge');
 const Pagination = require('./pagination');
 
 class TypeAhead {
-  constructor(typeahead = {}, criteria = {}, options = {}) {
-    this.options = { position: 'starts-with', escape: true, ...options };
+  constructor(field, term, criteria = {}, options = {}) {
+    this.options = options;
     this.values = {};
 
-    const { field, term } = typeahead;
     this.field = field;
     this.term = term;
-
     this.criteria = criteria;
   }
 
@@ -59,7 +57,7 @@ class TypeAhead {
     const value = this.buildRegex();
     return {
       criteria: { ...criteria, [field]: value },
-      sort: { [field]: 1 },
+      sort: { field, order: 1 },
     };
   }
 
@@ -77,8 +75,8 @@ class TypeAhead {
       end = '$';
     }
     const value = escape ? escapeRegex(term) : term;
-    const options = caseSensitive ? undefined : 'i';
-    return new RegExp(`${start}${value}${end}`, options);
+    const flags = caseSensitive ? undefined : 'i';
+    return new RegExp(`${start}${value}${end}`, flags);
   }
 }
 
