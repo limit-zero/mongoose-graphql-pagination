@@ -47,5 +47,18 @@
     "mongoose",
     "pagination",
     "cursor"
-  ]
+  ],
+  "nyc": {
+    "check-coverage": false,
+    "per-file": true,
+    "reporter": [
+      "text",
+      "cobertura"
+    ],
+    "all": true,
+    "cache": false,
+    "include": [
+      "src/**/*.js"
+    ]
+  }
 }
