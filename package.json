@@ -1,0 +1,8 @@
+{
+  "name": "@limit0/mongoose-graphql-pagination",
+  "version": "0.1.0",
+  "description": "Provides GraphQL cursor pagination for Mongoose models",
+  "main": "src/index.js",
+  "author": "Jacob Bare <jacob@limit0.io>",
+  "license": "MIT"
+}
