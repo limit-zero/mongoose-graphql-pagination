@@ -1,0 +1,18 @@
+version: '3'
+services:
+  test:
+    image: node:8
+    tty: true
+    working_dir: /app
+    volumes:
+      - ../:/app:cached
+      - node_modules:/app/node_modules
+    entrypoint: yarn run test:run
+    environment:
+      NODE_ENV: test
+
+volumes:
+  node_modules:
+    labels:
+      io.limit0.appname: "mongoose-graphql-pagination"
+      io.limit0.env: "test"
