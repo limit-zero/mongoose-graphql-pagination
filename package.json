@@ -4,5 +4,25 @@
   "description": "Provides GraphQL cursor pagination for Mongoose models",
   "main": "src/index.js",
   "author": "Jacob Bare <jacob@limit0.io>",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "@limit0/graphql-custom-types": "^1.0.1",
+    "deep-assign": "^2.0.0"
+  },
+  "peerDependencies": {
+    "graphql": "^0.13.2"
+  },
+  "devDependencies": {
+    "eslint": "^4.19.1",
+    "eslint-config-airbnb-base": "^12.1.0",
+    "eslint-plugin-import": "^2.11.0",
+    "mocha": "^5.1.1",
+    "nyc": "^11.7.1"
+  },
+  "keywords": [
+    "graphql",
+    "mongoose",
+    "pagination",
+    "cursor"
+  ]
 }
