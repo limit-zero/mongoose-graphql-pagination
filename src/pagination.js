@@ -6,9 +6,18 @@ class Pagination {
   /**
    * Constructor.
    *
-   * @param {Model} Model
-   * @param {object} params
-   * @param {object} options
+   * @param {Model} Model The Mongoose model to query against.
+   * @param {object} params The criteria, pagination, and sort params.
+   * @param {object} params.criteria Query criteria to apply to the paginated query.
+   * @param {object} params.pagination The pagination parameters.
+   * @param {number} params.pagination.first The number of documents to return.
+   *                                         Will default the the limit classes default.
+   * @param {string} params.pagination.after The ID to start querying from.
+   *                                         Should not be an obfuscated cursor value.
+   * @param {object} params.sort The sort parameters
+   * @param {string} params.sort.field The sort field name.
+   * @param {string} params.sort.order The sort order. Either 1/-1 or asc/desc.
+   * @param {object} options Additional sort and limit options. See the corresponding classes.
    */
   constructor(Model, { criteria = {}, pagination = {}, sort = {} } = {}, options = {}) {
     // Set the Model to use for querying.
