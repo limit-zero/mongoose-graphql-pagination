@@ -32,7 +32,8 @@
   },
   "dependencies": {
     "@limit0/graphql-custom-types": "^1.0.1",
-    "deepmerge": "^2.1.0"
+    "deepmerge": "^2.1.0",
+    "escape-string-regexp": "^1.0.5"
   },
   "peerDependencies": {
     "graphql": "^0.13.2"
