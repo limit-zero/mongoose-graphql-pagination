@@ -52,8 +52,7 @@
     "check-coverage": false,
     "per-file": true,
     "reporter": [
-      "text",
-      "cobertura"
+      "text"
     ],
     "all": true,
     "cache": false,
