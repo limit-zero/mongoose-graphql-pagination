@@ -7,11 +7,11 @@
   "license": "MIT",
   "scripts": {
     "pretest": "yarn run posttest && $npm_package_docker_test_install",
-    "posttest": "$npm_package_docker_test_down",
+    "posttest": "$npm_package_docker_test_down && $npm_package_docker_test_prune",
     "test": "$npm_package_docker_test_test",
     "precoverage": "yarn run postcoverage && $npm_package_docker_test_install",
     "coverage": "$npm_package_docker_test_coverage",
-    "postcoverage": "$npm_package_docker_test_down",
+    "postcoverage": "$npm_package_docker_test_down && $npm_package_docker_test_prune",
     "prelint": "$npm_package_docker_test_install",
     "lint": "$npm_package_docker_test_lint",
     "postlint": "$npm_package_docker_test_down",
@@ -25,7 +25,8 @@
       "test": "docker-compose -p graphql-pagination -f test/docker-compose.yml run test",
       "coverage": "docker-compose -p graphql-pagination -f test/docker-compose.yml run --entrypoint yarn test run coverage:run",
       "lint": "docker-compose -p graphql-pagination -f test/docker-compose.yml run --entrypoint yarn test run lint:run",
-      "down": "docker-compose -p graphql-pagination -f test/docker-compose.yml down"
+      "down": "docker-compose -p graphql-pagination -f test/docker-compose.yml down",
+      "prune": "docker volume prune --filter label=io.as3.appname=graphql-pagination --filter label=io.as3.env=test --filter label=io.as3.discard=true --force"
     }
   },
   "dependencies": {
@@ -36,12 +37,15 @@
     "graphql": "^0.13.2"
   },
   "devDependencies": {
+    "bluebird": "^3.5.1",
     "chai": "^4.1.2",
+    "chai-as-promised": "^7.1.1",
     "eslint": "^4.19.1",
     "eslint-config-airbnb-base": "^12.1.0",
     "eslint-plugin-import": "^2.11.0",
     "graphql": "^0.13.2",
     "mocha": "^5.1.1",
+    "mongoose": "^5.0.17",
     "nyc": "^11.7.1"
   },
   "keywords": [

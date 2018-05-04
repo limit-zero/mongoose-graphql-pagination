@@ -4,15 +4,27 @@ services:
     image: node:8
     tty: true
     working_dir: /app
+    depends_on:
+      - mongo
     volumes:
       - ../:/app:cached
       - node_modules:/app/node_modules
     entrypoint: yarn run test:run
     environment:
+      MONGO_DSN: mongodb://mongo:27017/test
       NODE_ENV: test
+  mongo:
+    image: mongo:3.6
+    volumes:
+      - mongodb:/data/db
 
 volumes:
   node_modules:
     labels:
-      io.limit0.appname: "mongoose-graphql-pagination"
+      io.limit0.appname: "graphql-pagination"
+      io.limit0.env: "test"
+  mongodb:
+    labels:
+      io.limit0.appname: "graphql-pagination"
+      io.limit0.discard: "true"
       io.limit0.env: "test"
