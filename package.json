@@ -5,6 +5,29 @@
   "main": "src/index.js",
   "author": "Jacob Bare <jacob@limit0.io>",
   "license": "MIT",
+  "scripts": {
+    "pretest": "yarn run posttest && $npm_package_docker_test_install",
+    "posttest": "$npm_package_docker_test_down",
+    "test": "$npm_package_docker_test_test",
+    "precoverage": "yarn run postcoverage && $npm_package_docker_test_install",
+    "coverage": "$npm_package_docker_test_coverage",
+    "postcoverage": "$npm_package_docker_test_down",
+    "prelint": "$npm_package_docker_test_install",
+    "lint": "$npm_package_docker_test_lint",
+    "postlint": "$npm_package_docker_test_down",
+    "test:run": "yarn run lint:run && ./node_modules/.bin/mocha --reporter spec",
+    "lint:run": "./node_modules/.bin/eslint \"src/**/*.js\"",
+    "coverage:run": "./node_modules/.bin/nyc yarn run test:run"
+  },
+  "docker": {
+    "test": {
+      "install": "docker-compose -p graphql-pagination -f test/docker-compose.yml run --no-deps --entrypoint yarn test",
+      "test": "docker-compose -p graphql-pagination -f test/docker-compose.yml run test",
+      "coverage": "docker-compose -p graphql-pagination -f test/docker-compose.yml run --entrypoint yarn test run coverage:run",
+      "lint": "docker-compose -p graphql-pagination -f test/docker-compose.yml run --entrypoint yarn test run lint:run",
+      "down": "docker-compose -p graphql-pagination -f test/docker-compose.yml down"
+    }
+  },
   "dependencies": {
     "@limit0/graphql-custom-types": "^1.0.1",
     "deep-assign": "^2.0.0"
