@@ -1,6 +1,6 @@
 const { Schema } = require('mongoose');
 
-module.exports = new Schema({
+const schema = new Schema({
   name: {
     type: String,
   },
@@ -11,3 +11,8 @@ module.exports = new Schema({
 }, {
   timestamps: true,
 });
+
+schema.index({ name: 1, _id: 1 }, { unique: true });
+schema.index({ name: -1, _id: -1 }, { unique: true });
+
+module.exports = schema;
