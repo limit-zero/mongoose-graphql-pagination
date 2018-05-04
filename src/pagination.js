@@ -55,7 +55,7 @@ class Pagination {
     const criteria = await this.getQueryCriteria();
     return this.Model.find(criteria)
       .sort(this.sort.value)
-      .limit(this.limit.value)
+      .limit(this.first.value)
       .collation(this.sort.collation)
       .comment(this.createComment('getEdges'));
   }
@@ -70,8 +70,8 @@ class Pagination {
     const criteria = await this.getQueryCriteria();
     const doc = await this.Model.findOne(criteria)
       .sort(this.sort.value)
-      .limit(this.limit.value)
-      .skip(this.limit.value - 1)
+      .limit(this.first.value)
+      .skip(this.first.value - 1)
       .select({ _id: 1 })
       .collation(this.sort.collation)
       .comment(this.createComment('getEndCursor'));
@@ -91,7 +91,7 @@ class Pagination {
       .collation(this.sort.collation)
       .comment(this.createComment('hasNextPage'))
       .count();
-    return Boolean(count > this.limit.value);
+    return Boolean(count > this.first.value);
   }
 
   /**
