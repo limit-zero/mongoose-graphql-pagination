@@ -164,7 +164,7 @@ module.exports = {
   // The cursor type. Will obfuscate the MongoID.
   Cursor: CursorType,
 
-  // Apply the pagination resolves for the connection and edge.
+  // Apply the pagination resolvers for the connection and edge.
   ContactConnection: paginationResolvers.connection,
   ContactEdge: paginationResolvers.edge,
 
