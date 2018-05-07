@@ -5,6 +5,7 @@ describe('index', function() {
     expect(models).to.be.an('object').with.all.keys(
       'Pagination',
       'TypeAhead',
+      'paginationResolvers',
     );
     done();
   });
