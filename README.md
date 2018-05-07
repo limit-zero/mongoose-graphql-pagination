@@ -15,7 +15,7 @@ const { Pagination } = require('@limit0/mongoose-graphql-pagination');
 Use the class constructor to configure the settings for the paginated query.
 
 #### constructor(Model, { criteria = {}, pagination = {}, sort = {} }, options = {})
-`*Model`: The Mongoose model instance to query. _Required._
+`Model`: The Mongoose model instance to query. _Required._
 
 `criteria`: A query criteria object to apply to the paginated query. Can be any MongoDB query. For example: `{ deleted: false }` or `{ age: { $gt: 30 } }`. Optional.
 
@@ -31,9 +31,9 @@ const { Pagination } = require('@limit0/mongoose-graphql-pagination');
 const YourModel = require('./your-model');
 
 const paginated = new Pagination(YourModel, {
-  { deleted: false },
-  { first: 25 },
-  { field: 'name', order: -1 },
+  criteria: { deleted: false },
+  pagination: { first: 25 },
+  sort: { field: 'name', order: -1 },
 });
 // Retrieve the edges...
 const edges = paginated.getEdges();
@@ -45,7 +45,7 @@ Once the instance is created, use the methods listed below to access the paginat
 Returns the total number of documents that match the query criteria, regardless of page size (limit).
 
 #### getEdges()
-Returns the edges (Mongoos document nodes) that match the query criteria. The results will be limited by the `first` value.
+Returns the edges (Mongoose document nodes) that match the query criteria. The results will be limited by the `first` value.
 
 #### getEndCursor()
 Returns the cursor value (non-obfuscated) of the last edge that matches the current criteria. This value will resolve to the Mongoose document ID, and can be converted into an obfuscated ID when returned by the GraphQL server. Will return `null` if no additional documents remain.
@@ -124,6 +124,12 @@ type ContactConnection {
 type ContactEdge {
   node: Contact!
   cursor: Cursor!
+}
+
+type Contact {
+  id: String!
+  name: String!
+  email: String!
 }
 
 type PageInfo {
