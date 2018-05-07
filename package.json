@@ -56,7 +56,11 @@
     "graphql",
     "mongoose",
     "pagination",
-    "cursor"
+    "cursor",
+    "autocomplete",
+    "typeahead",
+    "mongodb",
+    "apollo"
   ],
   "nyc": {
     "check-coverage": false,
