@@ -170,7 +170,11 @@ module.exports = {
 
   Query: {
     // Use pagination on the query.
-    allContacts: (root, { pagination, sort }) => new Pagination(Contact, { pagination, sort }),
+    allContacts: (root, { pagination, sort }) => new Pagination(Contact, { pagination, sort }, {
+      // Informs the sort that the `createdAt` field specifies a created date.
+      // Will instead use the document ID when sorting.
+      sort: { createdField: 'createdAt' },
+    }),
   },
 };
 ```
