@@ -53,11 +53,12 @@ class Pagination {
    */
   async getEdges() {
     const criteria = await this.getQueryCriteria();
-    return this.Model.find(criteria)
+    const docs = await this.Model.find(criteria)
       .sort(this.sort.value)
       .limit(this.first.value)
       .collation(this.sort.collation)
       .comment(this.createComment('getEdges'));
+    return docs.map(doc => ({ node: doc, cursor: doc.id }));
   }
 
   /**
