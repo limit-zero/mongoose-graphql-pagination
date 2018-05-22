@@ -96,10 +96,17 @@ class Pagination {
    *
    * @return {Promise}
    */
-  async getEndCursor() {
-    const edges = await this.getEdges();
-    const last = edges[edges.length - 1];
-    return last ? last.cursor : null;
+  getEndCursor() {
+    const run = async () => {
+      const edges = await this.getEdges();
+      const last = edges[edges.length - 1];
+      return last ? last.cursor : null;
+    };
+    if (!this.promises.endCursor) {
+      this.promises.endCursor = run();
+    }
+    return this.promises.endCursor;
+
   }
 
   /**
