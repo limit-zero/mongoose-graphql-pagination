@@ -31,7 +31,7 @@ describe('resolvers', function() {
       it('should return the cursor and next page functions.', async function() {
         const fns = connection.pageInfo(paginated);
         await expect(fns.hasNextPage()).to.eventually.be.false;
-        await expect(fns.endCursor()).to.eventually.be.null;
+        await expect(fns.endCursor()).to.eventually.equal(model.id);
       });
     });
   });

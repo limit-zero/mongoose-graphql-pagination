@@ -106,21 +106,21 @@ describe('pagination', function() {
   });
 
   describe('#getEndCursor', function() {
-    [1, 5, 10, 15].forEach((first) => {
+    [1, 5, 8, 10, 15].forEach((first) => {
       const pagination = { first };
       const paginated = new Pagination(Model, { pagination });
       it(`should return the correct cursor value when requesting ${first} records while ascending.`, async function() {
-        const expected = first > models.length ? null : models[first - 1].id;
+        const expected =  models.length <= first ? models[models.length - 1].id : models[first - 1].id;
         await expect(paginated.getEndCursor()).to.eventually.equal(expected);
       });
     });
-    [1, 5, 10, 15].forEach((first) => {
+    [1, 5, 8, 10, 15].forEach((first) => {
       const pagination = { first };
       const sort = { order: -1 };
       const paginated = new Pagination(Model, { pagination }, { sort });
       it(`should return the correct cursor value when requesting ${first} records while descending.`, async function() {
         const flipped = models.slice(0).reverse();
-        const expected = first > models.length ? null : models[first - 1].id;
+        const expected =  models.length <= first ? models[models.length - 1].id : models[first - 1].id;
         await expect(paginated.getEndCursor()).to.eventually.equal(expected);
       });
     });
