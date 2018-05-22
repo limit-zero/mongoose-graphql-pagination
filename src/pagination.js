@@ -103,6 +103,7 @@ class Pagination {
     const criteria = await this.getQueryCriteria();
     const count = await this.Model.find(criteria)
       .select({ _id: 1 })
+      .limit(this.first.value + 1)
       .sort(this.sort.value)
       .collation(this.sort.collation)
       .comment(this.createComment('hasNextPage'))
