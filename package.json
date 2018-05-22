@@ -39,7 +39,7 @@
     "elasticsearch": "^15.0.0"
   },
   "peerDependencies": {
-    "graphql": "^0.13.2"
+    "mongoose": "^5.0.17"
   },
   "devDependencies": {
     "bluebird": "^3.5.1",
