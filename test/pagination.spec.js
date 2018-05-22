@@ -1,6 +1,7 @@
 require('./connection');
 const Model = require('./mongoose/model');
 const Pagination = require('../src/pagination');
+const sandbox = sinon.createSandbox();
 
 const data = [
   { name: 'foo', deleted: false },
@@ -29,6 +30,17 @@ describe('pagination', function() {
     await Model.remove();
   });
 
+  beforeEach(function() {
+    sandbox.spy(Model, 'find');
+    sandbox.spy(Model, 'findOne');
+    sandbox.spy(Pagination.prototype, 'getEdges');
+    sandbox.spy(Pagination.prototype, 'getQueryCriteria');
+    sandbox.spy(Pagination.prototype, 'findCursorModel');
+  });
+  afterEach(function() {
+    sandbox.restore();
+  });
+
   it('should return an object', function(done) {
     expect(new Pagination()).to.be.an('object');
     done();
@@ -55,6 +67,14 @@ describe('pagination', function() {
       const criteria = { badField: 'foo' };
       const paginated = new Pagination(Model, { criteria, pagination });
       await expect(paginated.getTotalCount()).to.eventually.equal(0);
+    });
+    it('should only query the database once when called multiple times', async function() {
+      const pagination = { first: 5 };
+      const paginated = new Pagination(Model, { pagination });
+      const r1 = await paginated.getTotalCount();
+      const r2 = await paginated.getTotalCount();
+      expect(r1).to.equal(r2);
+      sinon.assert.calledOnce(Model.find);
     });
   });
 
@@ -130,6 +150,14 @@ describe('pagination', function() {
       const paginated = new Pagination(Model, { criteria, pagination });
       await expect(paginated.getEndCursor()).to.eventually.equal(null);
     });
+    it('should only query the database once when called multiple times', async function() {
+      const pagination = { first: 5 };
+      const paginated = new Pagination(Model, { pagination });
+      const r1 = await paginated.getEndCursor();
+      const r2 = await paginated.getEndCursor();
+      expect(r1).to.deep.equal(r2);
+      sinon.assert.calledOnce(Pagination.prototype.getEdges);
+    });
   });
 
   describe('#getEdges', function() {
@@ -182,6 +210,15 @@ describe('pagination', function() {
       const promise = await expect(paginated.getEdges()).to.eventually.be.an('array').with.property('length', 0);
     });
 
+    it('should only query the database once when called multiple times', async function() {
+      const pagination = { first: 5 };
+      const paginated = new Pagination(Model, { pagination });
+      const r1 = await paginated.getEdges();
+      const r2 = await paginated.getEdges();
+      expect(r1).to.deep.equal(r2);
+      sinon.assert.calledOnce(Pagination.prototype.getQueryCriteria);
+    });
+
   });
 
   describe('#findCursorModel', function() {
@@ -198,6 +235,14 @@ describe('pagination', function() {
       const id = '507f1f77bcf86cd799439011';
       const paginated = new Pagination(Model);
       await expect(paginated.findCursorModel(id)).to.be.rejectedWith(Error, /no record found/i);
+    });
+    it('should only query the database once when called multiple times', async function() {
+      const doc = models[0];
+      const paginated = new Pagination(Model);
+      const r1 = await paginated.findCursorModel(doc.id, { _id: 1 });
+      const r2 = await paginated.findCursorModel(doc.id, { _id: 1 });
+      expect(r1).to.deep.equal(r2);
+      sinon.assert.calledOnce(Model.findOne);
     });
   });
 
@@ -289,6 +334,25 @@ describe('pagination', function() {
       // call it twice to simulate saved filter.
       await expect(paginated.getQueryCriteria()).to.eventually.deep.equal(expected);
       await expect(paginated.getQueryCriteria()).to.eventually.deep.equal(expected);
+    });
+    it('should only query the database once when called multiple times', async function() {
+      const model = models[0];
+      const options = {
+        pagination: { after: model.id },
+        sort: { field: 'name', order: -1 },
+      };
+      const expected = {
+        $or: [
+          { name: { $lt: model.name } },
+          { name: model.name, _id: { $lt: model.id } },
+        ],
+      };
+      const paginated = new Pagination(Model, options);
+
+      const r1 = await paginated.getQueryCriteria();
+      const r2 = await paginated.getQueryCriteria();
+      expect(r1).to.deep.equal(r2);
+      sinon.assert.calledOnce(Pagination.prototype.findCursorModel);
     });
   });
 
