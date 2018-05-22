@@ -66,6 +66,7 @@ describe('search-pagination', function() {
     sandbox.spy(client, 'search');
     sandbox.spy(SearchPagination.prototype, 'getSearchBody');
     sandbox.spy(SearchPagination.prototype, 'getEndCursor');
+    sandbox.spy(SearchPagination.prototype, 'getEdges');
   });
   afterEach(function() {
     sandbox.restore();
@@ -154,6 +155,38 @@ describe('search-pagination', function() {
       const r2 = await paginated.hasNextPage();
       expect(r1).to.deep.equal(r2);
       sinon.assert.calledOnce(SearchPagination.prototype.getEndCursor);
+    });
+  });
+
+  describe('#getEndCursor', function() {
+    [1, 5, 8, 10, 15].forEach((first) => {
+      const pagination = { first };
+      const body = { query: { match_all: {} } };
+      const params = { index, type, body }
+      const paginated = new SearchPagination(Model, client, { params, pagination });
+      it(`should return the correct cursor value when requesting ${first} records.`, async function() {
+        const id = docs.length <= first ? docs[docs.length - 1].id : docs[first - 1].id;
+        const cursor = JSON.stringify([1, id]);
+
+        await expect(paginated.getEndCursor()).to.eventually.equal(cursor);
+      });
+    });
+    it(`should return null when nothing could be found.`, async function() {
+      const pagination = { first: 2 };
+      const body = { query: { term: { name: 'baz' } } };
+      const params = { index, type, body }
+      const paginated = new SearchPagination(Model, client, { params, pagination });
+      await expect(paginated.getEndCursor()).to.eventually.equal(null);
+    });
+    it('should only run once when called multiple times', async function() {
+      const pagination = { first: 3 };
+      const body = { query: { term: { name: 'foo' } } };
+      const params = { index, type, body }
+      const paginated = new SearchPagination(Model, client, { params, pagination });
+      const r1 = await paginated.getEndCursor();
+      const r2 = await paginated.getEndCursor();
+      expect(r1).to.deep.equal(r2);
+      sinon.assert.calledOnce(SearchPagination.prototype.getEdges);
     });
   });
 
