@@ -134,7 +134,7 @@ class Pagination {
    * @private
    * @return {Promise}
    */
-  async getQueryCriteria() {
+  getQueryCriteria() {
     const run = async () => {
       const { field, order } = this.sort;
 
