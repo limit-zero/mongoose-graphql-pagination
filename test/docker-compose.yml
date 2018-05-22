@@ -6,17 +6,30 @@ services:
     working_dir: /app
     depends_on:
       - mongo
+      - elasticsearch
     volumes:
       - ../:/app:cached
       - node_modules:/app/node_modules
     entrypoint: yarn run test:run
     environment:
       MONGO_DSN: mongodb://mongo:27017/test
+      ELASTIC_HOST: http://elasticsearch:9200
       NODE_ENV: test
   mongo:
     image: mongo:3.6
     volumes:
       - mongodb:/data/db
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.2.4
+    environment:
+      - cluster.name=docker-cluster
+      - bootstrap.memory_lock=true
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
 
 volumes:
   node_modules:
@@ -24,6 +37,11 @@ volumes:
       io.limit0.appname: "graphql-pagination"
       io.limit0.env: "test"
   mongodb:
+    labels:
+      io.limit0.appname: "graphql-pagination"
+      io.limit0.discard: "true"
+      io.limit0.env: "test"
+  esdata:
     labels:
       io.limit0.appname: "graphql-pagination"
       io.limit0.discard: "true"
