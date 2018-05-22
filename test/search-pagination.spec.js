@@ -64,7 +64,6 @@ describe('search-pagination', function() {
   beforeEach(function() {
     sandbox.spy(client, 'count');
     sandbox.spy(client, 'search');
-    sandbox.spy(Model, 'find');
     sandbox.spy(SearchPagination.prototype, 'getSearchBody');
     sandbox.spy(SearchPagination.prototype, 'getEndCursor');
     sandbox.spy(SearchPagination.prototype, 'getEdges');
@@ -204,7 +203,7 @@ describe('search-pagination', function() {
 
       const promise = await expect(paginated.getEdges()).to.eventually.be.an('array');
       const edges = await promise;
-      expect(edges.map(edge => edge.node.id)).to.deep.equal(ids);
+      expect(edges.map(edge => edge.node._id)).to.deep.equal(ids);
       expect(edges.map(edge => edge.cursor)).to.deep.equal(cursors);
     });
     it('should only run once when called multiple times', async function() {
@@ -216,7 +215,6 @@ describe('search-pagination', function() {
       const r2 = await paginated.getEdges();
       expect(r1).to.deep.equal(r2);
       sinon.assert.calledOnce(client.search);
-      sinon.assert.calledOnce(Model.find);
     });
   });
 
@@ -238,7 +236,7 @@ describe('search-pagination', function() {
     it('should respect a different max limit option', function(done) {
       const body = { query: { match_all: {} } };
       const params = { index, type, body }
-      const paginated = new SearchPagination(Model, client, { params }, { limit: { def: 2 } });
+      const paginated = new SearchPagination(Model, client, undefined, { limit: { def: 2 } });
 
       const result = paginated.getSearchBody();
       expect(result.size).to.equal(2);
