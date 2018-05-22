@@ -104,12 +104,13 @@ class Pagination {
       const criteria = await this.getQueryCriteria();
       const count = await this.Model.find(criteria)
         .select({ _id: 1 })
-        .limit(this.first.value + 1)
+        .skip(this.first.value)
+        .limit(1)
         .sort(this.sort.value)
         .collation(this.sort.collation)
         .comment(this.createComment('hasNextPage'))
         .count();
-      return Boolean(count > this.first.value);
+      return Boolean(count);
     };
     if (!this.promises.nextPage) {
       this.promises.nextPage = run();
