@@ -63,6 +63,8 @@ describe('search-pagination', function() {
 
   beforeEach(function() {
     sandbox.spy(client, 'count');
+    sandbox.spy(client, 'search');
+    sandbox.spy(SearchPagination.prototype, 'getSearchBody');
   });
   afterEach(function() {
     sandbox.restore();
@@ -170,4 +172,87 @@ describe('search-pagination', function() {
     });
   });
 
+  describe('#getSearchParams', function() {
+    it('should return the proper values.', function(done) {
+      const pagination = { first: 5 };
+      const body = { query: { match_all: {} } };
+      const params = { index, type, body }
+      const paginated = new SearchPagination(Model, client, { params, pagination });
+
+      const expected = {
+        index,
+        type,
+        body: {
+          query: { match_all: {} },
+          size: 5,
+          sort: [
+            { _score: 'desc' },
+            { _id: 'asc' },
+          ],
+        }
+      };
+
+      expect(paginated.getSearchParams()).to.deep.equal(expected);
+      done();
+    });
+    it('should called the `getSearchBody` method.', function(done) {
+      const pagination = { first: 5 };
+      const body = { query: { match_all: {} } };
+      const params = { index, type, body }
+      const paginated = new SearchPagination(Model, client, { params, pagination });
+
+      paginated.getSearchParams();
+
+      sinon.assert.called(SearchPagination.prototype.getSearchBody);
+      done();
+    });
+  });
+
+  describe('#hasNextPage', function() {
+    // [
+    //   { first: 1, expected: true },
+    //   { first: 5, expected: true },
+    //   { first: 10, expected: false },
+    //   { first: 15, expected: false },
+    // ].forEach(({ first, expected }) => {
+    //   const pagination = { first };
+    //   const body = { query: { match_all: {} } };
+    //   const params = { index, type, body }
+    //   const paginated = new SearchPagination(Model, client, { params, pagination });
+    //   it(`should return ${expected} when requesting ${first} records.`, async function() {
+    //     await expect(paginated.hasNextPage()).to.eventually.equal(expected);
+    //   });
+    // });
+    // [
+    //   { first: 1, expected: true },
+    //   { first: 4, expected: true },
+    //   { first: 5, expected: false },
+    //   { first: 10, expected: false },
+    // ].forEach(({ first, expected }) => {
+    //   const pagination = { first };
+    //   const body = { query: { term: { name: 'foo' } } };
+    //   const params = { index, type, body }
+    //   const paginated = new SearchPagination(Model, client, { params, pagination });
+    //   it(`should return ${expected} when requesting ${first} records, with query criteria`, async function() {
+    //     await expect(paginated.hasNextPage()).to.eventually.equal(expected);
+    //   });
+    // });
+    // it(`should return false when nothing could be found.`, async function() {
+    //   const pagination = { first };
+    //   const body = { query: { term: { name: 'baz' } } };
+    //   const params = { index, type, body }
+    //   const paginated = new SearchPagination(Model, client, { params, pagination });
+    //   await expect(paginated.hasNextPage()).to.eventually.equal(false);
+    // });
+    // it('should only query the database once when called multiple times', async function() {
+    //   const pagination = { first: 3 };
+    //   const body = { query: { term: { name: 'foo' } } };
+    //   const params = { index, type, body }
+    //   const paginated = new SearchPagination(Model, client, { params, pagination });
+    //   const r1 = await paginated.hasNextPage();
+    //   const r2 = await paginated.hasNextPage();
+    //   expect(r1).to.deep.equal(r2);
+    //   sinon.assert.calledOnce(client.search);
+    // });
+  });
 });
