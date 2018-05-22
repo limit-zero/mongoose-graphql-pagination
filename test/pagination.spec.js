@@ -139,8 +139,8 @@ describe('pagination', function() {
       const pagination = { first: 5 };
       const paginated = new Pagination(Model, { sort, pagination });
       const promise = await expect(paginated.getEdges()).to.eventually.be.an('array');
-      const results = await promise;
-      expect(results.map(model => model.id)).to.deep.equal(ids);
+      const edges = await promise;
+      expect(edges.map(edge => edge.node.id)).to.deep.equal(ids);
     });
 
     it('should return a list for models, sorted by name, ascending.', async function() {
@@ -149,8 +149,8 @@ describe('pagination', function() {
       const pagination = { first: 5 };
       const paginated = new Pagination(Model, { sort, pagination });
       const promise = await expect(paginated.getEdges()).to.eventually.be.an('array');
-      const results = await promise;
-      expect(results.map(model => model.name)).to.deep.equal(expected);
+      const edges = await promise;
+      expect(edges.map(edge => edge.node.name)).to.deep.equal(expected);
     });
 
     it('should return a list for models, sorted by name, descending.', async function() {
@@ -159,8 +159,8 @@ describe('pagination', function() {
       const pagination = { first: 5 };
       const paginated = new Pagination(Model, { sort, pagination });
       const promise = await expect(paginated.getEdges()).to.eventually.be.an('array');
-      const results = await promise;
-      expect(results.map(model => model.name)).to.deep.equal(expected);
+      const edges = await promise;
+      expect(edges.map(edge => edge.node.name)).to.deep.equal(expected);
     });
 
     it('should return a list for models, sorted by name, ascending, with query criteria.', async function() {
@@ -170,8 +170,8 @@ describe('pagination', function() {
       const pagination = { first: 10 };
       const paginated = new Pagination(Model, { sort, pagination, criteria });
       const promise = await expect(paginated.getEdges()).to.eventually.be.an('array');
-      const results = await promise;
-      expect(results.map(model => model.name)).to.deep.equal(expected);
+      const edges = await promise;
+      expect(edges.map(edge => edge.node.name)).to.deep.equal(expected);
     });
 
     it('should return an empty array when no results could be found.', async function() {
