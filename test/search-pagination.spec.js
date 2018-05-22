@@ -235,6 +235,16 @@ describe('search-pagination', function() {
       ]);
       done();
     });
+    it('should respect a different max limit option', function(done) {
+      const body = { query: { match_all: {} } };
+      const params = { index, type, body }
+      const paginated = new SearchPagination(Model, client, { params }, { limit: { def: 2 } });
+
+      const result = paginated.getSearchBody();
+      expect(result.size).to.equal(2);
+      done();
+    });
+
     it('should override the size and sort if previously set.', function(done) {
       const pagination = { first: 5 };
       const body = { query: { match_all: {} }, size: 20, sort: { _id: 'desc' } };
