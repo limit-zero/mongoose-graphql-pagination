@@ -64,6 +64,7 @@ describe('search-pagination', function() {
   beforeEach(function() {
     sandbox.spy(client, 'count');
     sandbox.spy(client, 'search');
+    sandbox.spy(Model, 'find');
     sandbox.spy(SearchPagination.prototype, 'getSearchBody');
     sandbox.spy(SearchPagination.prototype, 'getEndCursor');
     sandbox.spy(SearchPagination.prototype, 'getEdges');
@@ -187,6 +188,35 @@ describe('search-pagination', function() {
       const r2 = await paginated.getEndCursor();
       expect(r1).to.deep.equal(r2);
       sinon.assert.calledOnce(SearchPagination.prototype.getEdges);
+    });
+  });
+
+  describe('#getEdges', function() {
+    it('should return a natural list of documents.', async function() {
+      const pagination = { first: 5 };
+      const body = { query: { match_all: {} } };
+      const params = { index, type, body }
+      const paginated = new SearchPagination(Model, client, { params, pagination });
+
+      const set = docs.slice(0, 5);
+      const ids = set.map(doc => doc.id);
+      const cursors = set.map(doc => JSON.stringify([1, doc.id]));
+
+      const promise = await expect(paginated.getEdges()).to.eventually.be.an('array');
+      const edges = await promise;
+      expect(edges.map(edge => edge.node.id)).to.deep.equal(ids);
+      expect(edges.map(edge => edge.cursor)).to.deep.equal(cursors);
+    });
+    it('should only run once when called multiple times', async function() {
+      const pagination = { first: 3 };
+      const body = { query: { term: { name: 'foo' } } };
+      const params = { index, type, body }
+      const paginated = new SearchPagination(Model, client, { params, pagination });
+      const r1 = await paginated.getEdges();
+      const r2 = await paginated.getEdges();
+      expect(r1).to.deep.equal(r2);
+      sinon.assert.calledOnce(client.search);
+      sinon.assert.calledOnce(Model.find);
     });
   });
 
