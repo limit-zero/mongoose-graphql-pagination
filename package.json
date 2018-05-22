@@ -35,7 +35,8 @@
     "escape-string-regexp": "^1.0.5"
   },
   "optionalDependencies": {
-    "@limit0/graphql-custom-types": "^1.0.1"
+    "@limit0/graphql-custom-types": "^1.0.1",
+    "elasticsearch": "^15.0.0"
   },
   "peerDependencies": {
     "graphql": "^0.13.2"
@@ -44,6 +45,7 @@
     "bluebird": "^3.5.1",
     "chai": "^4.1.2",
     "chai-as-promised": "^7.1.1",
+    "elasticsearch": "^15.0.0",
     "eslint": "^4.19.1",
     "eslint-config-airbnb-base": "^12.1.0",
     "eslint-plugin-import": "^2.11.0",
