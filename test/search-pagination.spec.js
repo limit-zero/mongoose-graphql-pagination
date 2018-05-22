@@ -106,4 +106,68 @@ describe('search-pagination', function() {
       sinon.assert.calledOnce(client.count);
     });
   });
+
+  describe('#getSearchBody', function() {
+    it('should contain the size and sort properties', function(done) {
+      const pagination = { first: 5 };
+      const body = { query: { match_all: {} } };
+      const params = { index, type, body }
+      const paginated = new SearchPagination(Model, client, { params, pagination });
+
+      const result = paginated.getSearchBody();
+      expect(result.size).to.equal(5);
+      expect(result.sort).to.deep.equal([
+        { _score: 'desc' },
+        { _id: 'asc' },
+      ]);
+      done();
+    });
+    it('should override the size and sort if previously set.', function(done) {
+      const pagination = { first: 5 };
+      const body = { query: { match_all: {} }, size: 20, sort: { _id: 'desc' } };
+      const params = { index, type, body }
+      const paginated = new SearchPagination(Model, client, { params, pagination });
+
+      const result = paginated.getSearchBody();
+      expect(result.size).to.equal(5);
+      expect(result.sort).to.deep.equal([
+        { _score: 'desc' },
+        { _id: 'asc' },
+      ]);
+      done();
+    });
+    it('should spread the passed `body` params.', function(done) {
+      const pagination = { first: 5 };
+      const body = { query: { match_all: {} } };
+      const params = { index, type, body }
+      const paginated = new SearchPagination(Model, client, { params, pagination });
+
+      const expected = {
+        query: { match_all: {} },
+        size: 5,
+        sort: [
+          { _score: 'desc' },
+          { _id: 'asc' },
+        ],
+      };
+
+      const result = paginated.getSearchBody();
+      expect(result).to.deep.equal(expected);
+      done();
+    });
+    it('should add the `search_after` property when an `after` value is set.', function(done) {
+      const after = JSON.stringify([1, '1234']);
+
+      const pagination = { first: 5, after };
+      const body = { query: { match_all: {} } };
+      const params = { index, type, body }
+      const paginated = new SearchPagination(Model, client, { params, pagination });
+
+      const result = paginated.getSearchBody();
+      expect(result.search_after).to.deep.equal([1, '1234']);
+      done();
+
+    });
+  });
+
 });
