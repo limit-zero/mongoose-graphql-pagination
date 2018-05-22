@@ -100,15 +100,21 @@ class Pagination {
    * @return {Promise}
    */
   async hasNextPage() {
-    const criteria = await this.getQueryCriteria();
-    const count = await this.Model.find(criteria)
-      .select({ _id: 1 })
-      .limit(this.first.value + 1)
-      .sort(this.sort.value)
-      .collation(this.sort.collation)
-      .comment(this.createComment('hasNextPage'))
-      .count();
-    return Boolean(count > this.first.value);
+    const run = async () => {
+      const criteria = await this.getQueryCriteria();
+      const count = await this.Model.find(criteria)
+        .select({ _id: 1 })
+        .limit(this.first.value + 1)
+        .sort(this.sort.value)
+        .collation(this.sort.collation)
+        .comment(this.createComment('hasNextPage'))
+        .count();
+      return Boolean(count > this.first.value);
+    };
+    if (!this.promises.nextPage) {
+      this.promises.nextPage = run();
+    }
+    return this.promises.nextPage;
   }
 
   /**

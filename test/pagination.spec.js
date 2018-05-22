@@ -123,6 +123,14 @@ describe('pagination', function() {
       const paginated = new Pagination(Model, { criteria, pagination });
       await expect(paginated.hasNextPage()).to.eventually.equal(false);
     });
+    it('should only query the database once when called multiple times', async function() {
+      const pagination = { first: 5 };
+      const paginated = new Pagination(Model, { pagination });
+      const r1 = await paginated.hasNextPage();
+      const r2 = await paginated.hasNextPage();
+      expect(r1).to.deep.equal(r2);
+      sinon.assert.calledOnce(Pagination.prototype.getQueryCriteria);
+    });
   });
 
   describe('#getEndCursor', function() {
