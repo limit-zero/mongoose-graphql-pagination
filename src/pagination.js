@@ -20,6 +20,8 @@ class Pagination {
    * @param {object} options Additional sort and limit options. See the corresponding classes.
    */
   constructor(Model, { criteria = {}, pagination = {}, sort = {} } = {}, options = {}) {
+    this.promises = {};
+
     // Set the Model to use for querying.
     this.Model = Model;
 
@@ -43,7 +45,14 @@ class Pagination {
    * @return {Promise}
    */
   getTotalCount() {
-    return this.Model.find(this.criteria).comment(this.createComment('getTotalCount')).count();
+    const run = () => this.Model
+      .find(this.criteria)
+      .comment(this.createComment('getTotalCount')).count();
+
+    if (!this.promises.count) {
+      this.promises.count = run();
+    }
+    return this.promises.count;
   }
 
   /**
@@ -51,14 +60,20 @@ class Pagination {
    *
    * @return {Promise}
    */
-  async getEdges() {
-    const criteria = await this.getQueryCriteria();
-    const docs = await this.Model.find(criteria)
-      .sort(this.sort.value)
-      .limit(this.first.value)
-      .collation(this.sort.collation)
-      .comment(this.createComment('getEdges'));
-    return docs.map(doc => ({ node: doc, cursor: doc.id }));
+  getEdges() {
+    const run = async () => {
+      const criteria = await this.getQueryCriteria();
+      const docs = await this.Model.find(criteria)
+        .sort(this.sort.value)
+        .limit(this.first.value)
+        .collation(this.sort.collation)
+        .comment(this.createComment('getEdges'));
+      return docs.map(doc => ({ node: doc, cursor: doc.id }));
+    };
+    if (!this.promises.edge) {
+      this.promises.edge = run();
+    }
+    return this.promises.edge;
   }
 
   /**
@@ -67,16 +82,16 @@ class Pagination {
    *
    * @return {Promise}
    */
-  async getEndCursor() {
-    const criteria = await this.getQueryCriteria();
-    const doc = await this.Model.findOne(criteria)
-      .sort(this.sort.value)
-      .limit(this.first.value)
-      .skip(this.first.value - 1)
-      .select({ _id: 1 })
-      .collation(this.sort.collation)
-      .comment(this.createComment('getEndCursor'));
-    return doc ? doc.get('id') : null;
+  getEndCursor() {
+    const run = async () => {
+      const edges = await this.getEdges();
+      if (!edges.length) return null;
+      return edges[edges.length - 1].cursor;
+    };
+    if (!this.promises.cursor) {
+      this.promises.cursor = run();
+    }
+    return this.promises.cursor;
   }
 
   /**
@@ -101,12 +116,18 @@ class Pagination {
    * @param {object} fields
    * @return {Promise}
    */
-  async findCursorModel(id, fields) {
-    const doc = await this.Model.findOne({ _id: id })
-      .select(fields)
-      .comment(this.createComment('findCursorModel'));
-    if (!doc) throw new Error(`No record found for ID '${id}'`);
-    return doc;
+  findCursorModel(id, fields) {
+    const run = async () => {
+      const doc = await this.Model.findOne({ _id: id })
+        .select(fields)
+        .comment(this.createComment('findCursorModel'));
+      if (!doc) throw new Error(`No record found for ID '${id}'`);
+      return doc;
+    };
+    if (!this.promises.model) {
+      this.promises.model = run();
+    }
+    return this.promises.model;
   }
 
   /**
@@ -114,33 +135,37 @@ class Pagination {
    * @return {Promise}
    */
   async getQueryCriteria() {
-    if (this.filter) return this.filter;
+    const run = async () => {
+      const { field, order } = this.sort;
 
-    const { field, order } = this.sort;
+      const filter = deepMerge({}, this.criteria);
+      const limits = {};
+      const ors = [];
 
-    const filter = deepMerge({}, this.criteria);
-    const limits = {};
-    const ors = [];
-
-    if (this.after) {
-      let doc;
-      const op = order === 1 ? '$gt' : '$lt';
-      if (field === '_id') {
-        // Sort by ID only.
-        doc = await this.findCursorModel(this.after, { _id: 1 });
-        filter._id = { [op]: doc.id };
-      } else {
-        doc = await this.findCursorModel(this.after, { [field]: 1 });
-        limits[op] = doc[field];
-        ors.push({
-          [field]: doc[field],
-          _id: { [op]: doc.id },
-        });
-        filter.$or = [{ [field]: limits }, ...ors];
+      if (this.after) {
+        let doc;
+        const op = order === 1 ? '$gt' : '$lt';
+        if (field === '_id') {
+          // Sort by ID only.
+          doc = await this.findCursorModel(this.after, { _id: 1 });
+          filter._id = { [op]: doc.id };
+        } else {
+          doc = await this.findCursorModel(this.after, { [field]: 1 });
+          limits[op] = doc[field];
+          ors.push({
+            [field]: doc[field],
+            _id: { [op]: doc.id },
+          });
+          filter.$or = [{ [field]: limits }, ...ors];
+        }
       }
+      return filter;
+    };
+
+    if (!this.promises.criteria) {
+      this.promises.criteria = run();
     }
-    this.filter = filter;
-    return this.filter;
+    return this.promises.criteria;
   }
 
   /**
