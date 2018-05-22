@@ -1,4 +1,5 @@
 const deepMerge = require('deepmerge');
+const Limit = require('./limit');
 
 class Pagination {
   /**
@@ -13,8 +14,12 @@ class Pagination {
    * @param {string} params.pagination.after The sort to start querying from.
    *                                         Should be an unobfuscated, JSON
    *                                         stringified verson of the `search_after` value.
+   * @param {object} options Additional options.
+   * @param {object} options.limit Limit options. See the `Limit` class for more info.
+   * @param {boolean} options.hydrate Whether to hydrate the results from ES
+   *                                  using the Mongoose model.
    */
-  constructor(Model, client, { params = {}, pagination = {} } = {}) {
+  constructor(Model, client, { params = {}, pagination = {} } = {}, options = {}) {
     this.promises = {};
 
     // Set the Model and Elastic client to use for querying.
@@ -26,7 +31,7 @@ class Pagination {
 
     // Set the limit and parse the after value.
     const { first, after } = pagination;
-    this.first = first || 10;
+    this.first = new Limit(first, options.limit);
     this.after = after ? JSON.parse(after) : null;
   }
 
