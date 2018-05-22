@@ -50,7 +50,8 @@
     "graphql": "^0.13.2",
     "mocha": "^5.1.1",
     "mongoose": "^5.0.17",
-    "nyc": "^11.7.1"
+    "nyc": "^11.7.1",
+    "sinon": "^5.0.7"
   },
   "keywords": [
     "graphql",
