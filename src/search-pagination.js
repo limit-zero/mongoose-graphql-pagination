@@ -9,7 +9,7 @@ class Pagination {
    * @param {Client} client The Elasticsearch client.
    * @param {object} params
    * @param {object} params.params The Elasticsearch search parameters.
-   * @param {object} param.pagination
+   * @param {object} params.pagination
    * @param {number} params.pagination.first The number of documents to return.
    * @param {string} params.pagination.after The sort to start querying from.
    *                                         Should be an unobfuscated, JSON
