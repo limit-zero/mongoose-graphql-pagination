@@ -65,11 +65,11 @@ describe('search-pagination', function() {
     sandbox.spy(client, 'count');
     sandbox.spy(client, 'search');
     sandbox.spy(SearchPagination.prototype, 'getSearchBody');
+    sandbox.spy(SearchPagination.prototype, 'getEndCursor');
   });
   afterEach(function() {
     sandbox.restore();
   });
-
 
   describe('#getTotalCount', function() {
     [1, 10, 50].forEach((first) => {
@@ -97,7 +97,7 @@ describe('search-pagination', function() {
       const paginated = new SearchPagination(Model, client, { params, pagination });
       await expect(paginated.getTotalCount()).to.eventually.equal(0);
     });
-    it('should only query the database once when called multiple times', async function() {
+    it('should only run once when called multiple times', async function() {
       const pagination = { first: 5 };
       const body = { query: { match_all: {} } };
       const params = { index, type, body }
@@ -106,6 +106,54 @@ describe('search-pagination', function() {
       const r2 = await paginated.getTotalCount();
       expect(r1).to.equal(r2);
       sinon.assert.calledOnce(client.count);
+    });
+  });
+
+  describe('#hasNextPage', function() {
+    [
+      { first: 1, expected: true },
+      { first: 5, expected: true },
+      { first: 10, expected: false },
+      { first: 15, expected: false },
+    ].forEach(({ first, expected }) => {
+      const pagination = { first };
+      const body = { query: { match_all: {} } };
+      const params = { index, type, body }
+      const paginated = new SearchPagination(Model, client, { params, pagination });
+      it(`should return ${expected} when requesting ${first} records.`, async function() {
+        await expect(paginated.hasNextPage()).to.eventually.equal(expected);
+      });
+    });
+    [
+      { first: 1, expected: true },
+      { first: 3, expected: true },
+      { first: 4, expected: false },
+      { first: 10, expected: false },
+    ].forEach(({ first, expected }) => {
+      const pagination = { first };
+      const body = { query: { term: { name: 'foo' } } };
+      const params = { index, type, body }
+      const paginated = new SearchPagination(Model, client, { params, pagination });
+      it(`should return ${expected} when requesting ${first} records, with query criteria`, async function() {
+        await expect(paginated.hasNextPage()).to.eventually.equal(expected);
+      });
+    });
+    it(`should return false when nothing could be found.`, async function() {
+      const pagination = { first: 2 };
+      const body = { query: { term: { name: 'baz' } } };
+      const params = { index, type, body }
+      const paginated = new SearchPagination(Model, client, { params, pagination });
+      await expect(paginated.hasNextPage()).to.eventually.equal(false);
+    });
+    it('should only run once when called multiple times', async function() {
+      const pagination = { first: 3 };
+      const body = { query: { term: { name: 'foo' } } };
+      const params = { index, type, body }
+      const paginated = new SearchPagination(Model, client, { params, pagination });
+      const r1 = await paginated.hasNextPage();
+      const r2 = await paginated.hasNextPage();
+      expect(r1).to.deep.equal(r2);
+      sinon.assert.calledOnce(SearchPagination.prototype.getEndCursor);
     });
   });
 
@@ -206,53 +254,5 @@ describe('search-pagination', function() {
       sinon.assert.called(SearchPagination.prototype.getSearchBody);
       done();
     });
-  });
-
-  describe('#hasNextPage', function() {
-    // [
-    //   { first: 1, expected: true },
-    //   { first: 5, expected: true },
-    //   { first: 10, expected: false },
-    //   { first: 15, expected: false },
-    // ].forEach(({ first, expected }) => {
-    //   const pagination = { first };
-    //   const body = { query: { match_all: {} } };
-    //   const params = { index, type, body }
-    //   const paginated = new SearchPagination(Model, client, { params, pagination });
-    //   it(`should return ${expected} when requesting ${first} records.`, async function() {
-    //     await expect(paginated.hasNextPage()).to.eventually.equal(expected);
-    //   });
-    // });
-    // [
-    //   { first: 1, expected: true },
-    //   { first: 4, expected: true },
-    //   { first: 5, expected: false },
-    //   { first: 10, expected: false },
-    // ].forEach(({ first, expected }) => {
-    //   const pagination = { first };
-    //   const body = { query: { term: { name: 'foo' } } };
-    //   const params = { index, type, body }
-    //   const paginated = new SearchPagination(Model, client, { params, pagination });
-    //   it(`should return ${expected} when requesting ${first} records, with query criteria`, async function() {
-    //     await expect(paginated.hasNextPage()).to.eventually.equal(expected);
-    //   });
-    // });
-    // it(`should return false when nothing could be found.`, async function() {
-    //   const pagination = { first };
-    //   const body = { query: { term: { name: 'baz' } } };
-    //   const params = { index, type, body }
-    //   const paginated = new SearchPagination(Model, client, { params, pagination });
-    //   await expect(paginated.hasNextPage()).to.eventually.equal(false);
-    // });
-    // it('should only query the database once when called multiple times', async function() {
-    //   const pagination = { first: 3 };
-    //   const body = { query: { term: { name: 'foo' } } };
-    //   const params = { index, type, body }
-    //   const paginated = new SearchPagination(Model, client, { params, pagination });
-    //   const r1 = await paginated.hasNextPage();
-    //   const r2 = await paginated.hasNextPage();
-    //   expect(r1).to.deep.equal(r2);
-    //   sinon.assert.calledOnce(client.search);
-    // });
   });
 });
