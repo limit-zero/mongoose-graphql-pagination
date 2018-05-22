@@ -104,7 +104,6 @@ class Pagination {
       this.promises.endCursor = run();
     }
     return this.promises.endCursor;
-
   }
 
   /**
