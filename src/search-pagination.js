@@ -151,7 +151,7 @@ class Pagination {
   getSearchBody() {
     const body = {
       ...this.params.body,
-      size: this.first,
+      size: this.first.value,
       sort: [
         { _score: 'desc' },
         { _id: 'asc' },
