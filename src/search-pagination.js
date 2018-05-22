@@ -16,8 +16,6 @@ class Pagination {
    *                                         stringified verson of the `search_after` value.
    * @param {object} options Additional options.
    * @param {object} options.limit Limit options. See the `Limit` class for more info.
-   * @param {boolean} options.hydrate Whether to hydrate the results from ES
-   *                                  using the Mongoose model.
    */
   constructor(Model, client, { params = {}, pagination = {} } = {}, options = {}) {
     this.promises = {};
