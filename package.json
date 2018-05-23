@@ -35,22 +35,25 @@
     "escape-string-regexp": "^1.0.5"
   },
   "optionalDependencies": {
-    "@limit0/graphql-custom-types": "^1.0.1"
+    "@limit0/graphql-custom-types": "^1.0.1",
+    "elasticsearch": "^15.0.0"
   },
   "peerDependencies": {
-    "graphql": "^0.13.2"
+    "mongoose": "^5.0.17"
   },
   "devDependencies": {
     "bluebird": "^3.5.1",
     "chai": "^4.1.2",
     "chai-as-promised": "^7.1.1",
+    "elasticsearch": "^15.0.0",
     "eslint": "^4.19.1",
     "eslint-config-airbnb-base": "^12.1.0",
     "eslint-plugin-import": "^2.11.0",
     "graphql": "^0.13.2",
     "mocha": "^5.1.1",
     "mongoose": "^5.0.17",
-    "nyc": "^11.7.1"
+    "nyc": "^11.7.1",
+    "sinon": "^5.0.7"
   },
   "keywords": [
     "graphql",

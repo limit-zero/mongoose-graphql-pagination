@@ -165,5 +165,10 @@ describe('sort', function() {
       });
       done();
     });
+    it('should set `createdAt` as the default value for the createdField', function(done) {
+      const sort = new Sort();
+      expect(sort.options.createdField).to.equal('createdAt');
+      done();
+    });
   });
 });

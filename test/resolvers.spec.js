@@ -20,32 +20,27 @@ describe('resolvers', function() {
       });
     });
     describe('#edges', function() {
-      it('should return an array with the doc.', async function() {
+      it('should return the proper edges.', async function() {
         const promise = connection.edges(paginated);
         await expect(promise).to.eventually.be.an('array').with.property('length', 1);
         const edges = await promise;
-        expect(edges[0].id).to.equal(model.id);
+        expect(edges[0].node.id).to.deep.equal(model.id);
       });
     });
     describe('#pageInfo', function() {
       it('should return the cursor and next page functions.', async function() {
         const fns = connection.pageInfo(paginated);
         await expect(fns.hasNextPage()).to.eventually.be.false;
-        await expect(fns.endCursor()).to.eventually.be.null;
+        await expect(fns.endCursor()).to.eventually.equal(model.id);
       });
     });
   });
   describe('.edge', function() {
     const { edge } = resolvers;
-    describe('#node', function() {
-      it('should return the document.', async function() {
-        await expect(edge.node(model)).to.deep.equal(model);
-      });
-    });
-    describe('#cursor', function() {
-      it('should return the document id.', async function() {
-        await expect(edge.cursor(model)).to.equal(model.id);
-      });
+    it('should be a function that returns whatever is passed to it.', function(done) {
+      expect(edge).to.be.a('function');
+      expect(edge('foo')).to.equal('foo');
+      done();
     });
   });
 });
