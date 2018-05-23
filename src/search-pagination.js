@@ -63,12 +63,22 @@ class Pagination {
       const results = await this.client.search(params);
 
       const { hits } = results.hits;
-      return hits.map((hit) => {
-        const cursor = JSON.stringify(hit.sort);
-        const node = { ...hit };
-        delete node.sort;
-        return { node, cursor };
-      });
+
+      const mapped = hits.reduce((obj, hit) => ({
+        ...obj,
+        [hit._id]: {
+          score: hit._score, // eslint-disable-line no-underscore-dangle
+          sort: hit.sort,
+        },
+      }), {});
+      const mapVal = (doc, prop) => mapped[doc._id.toString()][prop];
+
+      const docs = await this.Model.find({ _id: { $in: Object.keys(mapped) } });
+      const sorted = docs.sort((a, b) => mapVal(b, 'score') - mapVal(a, 'score'));
+      return sorted.map(node => ({
+        node,
+        cursor: JSON.stringify(mapVal(node, 'sort')),
+      }));
     };
 
     if (!this.promises.edge) {

@@ -203,7 +203,7 @@ describe('search-pagination', function() {
 
       const promise = await expect(paginated.getEdges()).to.eventually.be.an('array');
       const edges = await promise;
-      expect(edges.map(edge => edge.node._id)).to.deep.equal(ids);
+      expect(edges.map(edge => edge.node.id)).to.deep.equal(ids);
       expect(edges.map(edge => edge.cursor)).to.deep.equal(cursors);
     });
     it('should only run once when called multiple times', async function() {
