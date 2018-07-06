@@ -1,7 +1,10 @@
 require('./connection');
 const Model = require('./mongoose/model');
+const { Types } = require('mongoose');
 const Pagination = require('../src/pagination');
 const sandbox = sinon.createSandbox();
+
+const { ObjectId } = Types;
 
 const data = [
   { name: 'foo', deleted: false },
@@ -44,6 +47,31 @@ describe('pagination', function() {
   it('should return an object', function(done) {
     expect(new Pagination()).to.be.an('object');
     done();
+  });
+
+  it('should not merge special objects by default.', async function() {
+    const id = ObjectId('5b3980c956d5a405cc4007c5');
+    const criteria = {
+      foo: 'bar',
+      id,
+      bar: { a: 'b' },
+    };
+    const instance = new Pagination(Model, { criteria });
+    expect(instance.criteria).to.deep.equal(criteria);
+    expect(instance.criteria.id).to.be.an.instanceOf(ObjectId);
+  });
+
+  it('should merge special objects when specifically instructured to.', async function() {
+    const mergeOptions = {};
+    const id = ObjectId('5b3980c956d5a405cc4007c5');
+    const criteria = {
+      foo: 'bar',
+      id,
+      bar: { a: 'b' },
+    };
+    const instance = new Pagination(Model, { criteria }, { mergeOptions });
+    expect(instance.criteria.id).to.be.an('object');
+    expect(instance.criteria.id).to.not.be.an.instanceOf(ObjectId);
   });
 
   describe('#getTotalCount', function() {
