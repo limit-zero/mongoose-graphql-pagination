@@ -1,9 +1,37 @@
 require('./connection');
 const TypeAhead = require('../src/type-ahead');
 const Model = require('./mongoose/model');
+const { Types } = require('mongoose');
 const Pagination = require('../src/pagination');
 
+const { ObjectId } = Types;
+
 describe('type-ahead', function() {
+  it('should not merge special objects by default.', async function() {
+    const id = ObjectId('5b3980c956d5a405cc4007c5');
+    const criteria = {
+      foo: 'bar',
+      id,
+      bar: { a: 'b' },
+    };
+    const instance = new TypeAhead('foo', 'bar', criteria);
+    expect(instance.criteria).to.deep.equal(criteria);
+    expect(instance.criteria.id).to.be.an.instanceOf(ObjectId);
+  });
+
+  it('should merge special objects when specifically instructured to.', async function() {
+    const mergeOptions = {};
+    const id = ObjectId('5b3980c956d5a405cc4007c5');
+    const criteria = {
+      foo: 'bar',
+      id,
+      bar: { a: 'b' },
+    };
+    const instance = new TypeAhead('foo', 'bar', criteria, { mergeOptions });
+    expect(instance.criteria.id).to.be.an('object');
+    expect(instance.criteria.id).to.not.be.an.instanceOf(ObjectId);
+  });
+
   describe('.field', function() {
     it('should throw an error when empty', function(done) {
       const message = 'A type ahead field must be specified.';
