@@ -34,6 +34,7 @@ describe('pagination', function() {
   });
 
   beforeEach(function() {
+    sandbox.spy(Model, 'count');
     sandbox.spy(Model, 'find');
     sandbox.spy(Model, 'findOne');
     sandbox.spy(Pagination.prototype, 'getEdges');
@@ -102,7 +103,7 @@ describe('pagination', function() {
       const r1 = await paginated.getTotalCount();
       const r2 = await paginated.getTotalCount();
       expect(r1).to.equal(r2);
-      sinon.assert.calledOnce(Model.find);
+      sinon.assert.calledOnce(Model.count);
     });
   });
 

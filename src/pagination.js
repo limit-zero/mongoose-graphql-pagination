@@ -62,10 +62,7 @@ class Pagination {
    * @return {Promise}
    */
   getTotalCount() {
-    const run = () => this.Model
-      .find(this.criteria)
-      .comment(this.createComment('getTotalCount')).count();
-
+    const run = () => this.Model.count(this.criteria);
     if (!this.promises.count) {
       this.promises.count = run();
     }
