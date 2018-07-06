@@ -32,7 +32,8 @@
   },
   "dependencies": {
     "deepmerge": "^2.1.0",
-    "escape-string-regexp": "^1.0.5"
+    "escape-string-regexp": "^1.0.5",
+    "is-plain-object": "^2.0.4"
   },
   "optionalDependencies": {
     "@limit0/graphql-custom-types": "^1.0.1",
