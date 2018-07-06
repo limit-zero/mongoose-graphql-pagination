@@ -62,10 +62,7 @@ class Pagination {
    * @return {Promise}
    */
   getTotalCount() {
-    const run = () => this.Model
-      .find(this.criteria)
-      .comment(this.createComment('getTotalCount')).count();
-
+    const run = () => this.Model.count(this.criteria);
     if (!this.promises.count) {
       this.promises.count = run();
     }
@@ -176,9 +173,9 @@ class Pagination {
           filter._id = { [op]: doc.id };
         } else {
           doc = await this.findCursorModel(this.after, { [field]: 1 });
-          limits[op] = doc[field];
+          limits[op] = doc.get(field);
           ors.push({
-            [field]: doc[field],
+            [field]: doc.get(field),
             _id: { [op]: doc.id },
           });
           filter.$or = [{ [field]: limits }, ...ors];
