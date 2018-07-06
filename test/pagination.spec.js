@@ -227,6 +227,31 @@ describe('pagination', function() {
       sinon.assert.calledOnce(Pagination.prototype.getQueryCriteria);
     });
 
+    it('should apply the projection', async function() {
+      const pagination = { first: 10 };
+      const projection = { name: 1 };
+      const paginated = new Pagination(Model, { pagination, projection });
+      const r1 = await paginated.getEdges();
+      r1.forEach((edge, i) => {
+        const { node } = edge;
+        expect(node.deleted).to.be.undefined;
+        expect(node.name).to.equal(data[i].name);
+      });
+    });
+
+    [{}, undefined].forEach((projection) => {
+      it(`should return all fields when the projection is '${projection}'`, async function() {
+        const pagination = { first: 10 };
+        const paginated = new Pagination(Model, { pagination, projection });
+        const r1 = await paginated.getEdges();
+        r1.forEach((edge, i) => {
+          const { node } = edge;
+          expect(node.deleted).to.equal(data[i].deleted);
+          expect(node.name).to.equal(data[i].name);
+        });
+      });
+    });
+
   });
 
   describe('#findCursorModel', function() {
