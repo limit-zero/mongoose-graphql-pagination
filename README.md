@@ -16,7 +16,7 @@ const { Pagination } = require('@limit0/mongoose-graphql-pagination');
 ```
 Use the class constructor to configure the settings for the paginated query.
 
-#### constructor(Model, { criteria = {}, pagination = {}, sort = {} }, options = {})
+#### constructor(Model, { criteria = {}, pagination = {}, sort = {}, projection }, options = {})
 `Model`: The Mongoose model instance to query. _Required._
 
 `criteria`: A query criteria object to apply to the paginated query. Can be any MongoDB query. For example: `{ deleted: false }` or `{ age: { $gt: 30 } }`. Optional.
@@ -24,6 +24,8 @@ Use the class constructor to configure the settings for the paginated query.
 `pagination`: The pagination parameters object. Can accept a `first` and/or `after` property. The `first` value specifies the limit/page size. The `after` value specifies the cursor to start at when paginating. For example: `{ first: 50, after: 'some-cursor-value' }` would return the first 50 edges after the provided cursor. By default the results will be limited to 10 edges. Optional.
 
 `sort`: Specifies the sort options. The `field` property specifies the field to sort by, and the order defines the direction. For example: `{ field: 'name', order: -1 }` would sort the edges by name, descending. By default the edges are sorted by ID, ascending. Optional.
+
+`projection`: Specifies the fields to return from the database. For example: `{ field: 1 }` or `{ field: 0 }` would include or exclude the specified field, respectively. If left `undefined`, or as an empty object, all fields will be returned (which is the default behavior). Optional.
 
 `options`: Specifies additional configuration options, such as default limit, max limit, sort collation, and sort created field.
 

@@ -17,9 +17,15 @@ class Pagination {
    * @param {object} params.sort The sort parameters
    * @param {string} params.sort.field The sort field name.
    * @param {string} params.sort.order The sort order. Either 1/-1 or asc/desc.
+   * @param {?object} params.projection The field projection (fields to return).
    * @param {object} options Additional sort and limit options. See the corresponding classes.
    */
-  constructor(Model, { criteria = {}, pagination = {}, sort = {} } = {}, options = {}) {
+  constructor(Model, {
+    criteria = {},
+    pagination = {},
+    sort = {},
+    projection,
+  } = {}, options = {}) {
     this.promises = {};
 
     // Set the Model to use for querying.
@@ -36,6 +42,9 @@ class Pagination {
     // Set the sort criteria.
     const { field, order } = sort;
     this.sort = new Sort(field, order, options.sort);
+
+    // Set the projection.
+    this.projection = projection;
   }
 
   /**
@@ -63,7 +72,7 @@ class Pagination {
   getEdges() {
     const run = async () => {
       const criteria = await this.getQueryCriteria();
-      const docs = await this.Model.find(criteria)
+      const docs = await this.Model.find(criteria, this.projection)
         .sort(this.sort.value)
         .limit(this.first.value)
         .collation(this.sort.collation)
