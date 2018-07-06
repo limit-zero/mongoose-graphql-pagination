@@ -173,9 +173,9 @@ class Pagination {
           filter._id = { [op]: doc.id };
         } else {
           doc = await this.findCursorModel(this.after, { [field]: 1 });
-          limits[op] = doc[field];
+          limits[op] = doc.get(field);
           ors.push({
-            [field]: doc[field],
+            [field]: doc.get(field),
             _id: { [op]: doc.id },
           });
           filter.$or = [{ [field]: limits }, ...ors];
