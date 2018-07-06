@@ -1,9 +1,14 @@
 const escapeRegex = require('escape-string-regexp');
 const deepMerge = require('deepmerge');
+const isPlainObject = require('is-plain-object');
 const Pagination = require('./pagination');
+
+const mergeOptions = { isMergeableObject: isPlainObject };
 
 class TypeAhead {
   constructor(field, term, criteria = {}, options = {}) {
+    this.mergeOptions = options.mergeOptions || mergeOptions;
+
     this.options = options;
     this.values = {};
 
@@ -40,11 +45,11 @@ class TypeAhead {
   }
 
   set criteria(criteria) {
-    this.values.criteria = deepMerge({}, criteria);
+    this.values.criteria = deepMerge({}, criteria, this.mergeOptions);
   }
 
   get criteria() {
-    return deepMerge({}, this.values.criteria);
+    return deepMerge({}, this.values.criteria, this.mergeOptions);
   }
 
   paginate(Model, pagination = {}, options = {}) {

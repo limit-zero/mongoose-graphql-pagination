@@ -19,7 +19,7 @@ Use the class constructor to configure the settings for the paginated query.
 #### constructor(Model, { criteria = {}, pagination = {}, sort = {}, projection }, options = {})
 `Model`: The Mongoose model instance to query. _Required._
 
-`criteria`: A query criteria object to apply to the paginated query. Can be any MongoDB query. For example: `{ deleted: false }` or `{ age: { $gt: 30 } }`. Optional.
+`criteria`: A query criteria object to apply to the paginated query. Can be any MongoDB query. For example: `{ deleted: false }` or `{ age: { $gt: 30 } }`. The criteria will be deeply merged, but will ignore "special" objects such as `ObjectId` and, by default, will only merge "plain objects." Optional.
 
 `pagination`: The pagination parameters object. Can accept a `first` and/or `after` property. The `first` value specifies the limit/page size. The `after` value specifies the cursor to start at when paginating. For example: `{ first: 50, after: 'some-cursor-value' }` would return the first 50 edges after the provided cursor. By default the results will be limited to 10 edges. Optional.
 
@@ -27,7 +27,7 @@ Use the class constructor to configure the settings for the paginated query.
 
 `projection`: Specifies the fields to return from the database. For example: `{ field: 1 }` or `{ field: 0 }` would include or exclude the specified field, respectively. If left `undefined`, or as an empty object, all fields will be returned (which is the default behavior). Optional.
 
-`options`: Specifies additional configuration options, such as default limit, max limit, sort collation, and sort created field.
+`options`: Specifies additional configuration options, such as default limit, max limit, sort collation, object merge options, and sort created field.
 
 Complete example:
 ```js
@@ -69,9 +69,9 @@ Use the class constructor to configure the settings for the type-ahead query.
 
 `term`: The search term. Can/should be a partial phrase. _Required._
 
-`criteria`: Additional MongoDB query criteria to apply when querying. For example `{ deleted: false }`. Optional.
+`criteria`: Additional MongoDB query criteria to apply when querying. For example `{ deleted: false }`. The criteria will be deeply merged, but will ignore "special" objects such as `ObjectId` and, by default, will only merge "plain objects." Optional.
 
-`options`: The type-ahead configuration options object. Has three possible properties:
+`options`: The type-ahead configuration options object. Has three type-ahead related properties:
 ```js
 {
   // Determines how the regex is constructed.
@@ -86,6 +86,7 @@ Use the class constructor to configure the settings for the type-ahead query.
   caseSensitive: false,
 }
 ```
+In addition, the `options` will also accept the optional `mergeOptions` object property htat can be used to override the default merge rules.
 
 #### paginate(Model, pagination = {}, options = {})
 Creates a `Pagination` instance using the constructed `TypeAhead` options.
