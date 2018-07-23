@@ -7,6 +7,7 @@ describe('index', function() {
       'ElasticPagination',
       'TypeAhead',
       'paginationResolvers',
+      'plugins',
     );
     done();
   });
