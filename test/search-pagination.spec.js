@@ -57,7 +57,7 @@ describe('search-pagination', function() {
     await client.indices.refresh({ index });
   });
   after(async function() {
-    await Model.remove();
+    await Model.deleteMany({});
     await client.indices.delete({ index });
   });
 

@@ -6,6 +6,7 @@ mongoose.Promise = bluebird;
 
 const connection = mongoose.createConnection(MONGO_DSN, {
   promiseLibrary: bluebird,
+  useNewUrlParser: true,
 });
 
 module.exports = connection;

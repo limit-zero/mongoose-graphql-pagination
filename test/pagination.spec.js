@@ -30,7 +30,7 @@ describe('pagination', function() {
     models = await createModels();
   });
   after(async function() {
-    await Model.remove();
+    await Model.deleteMany({});
   });
 
   beforeEach(function() {
