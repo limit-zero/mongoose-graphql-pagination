@@ -10,7 +10,7 @@ describe('resolvers', function() {
     model = await (new Model({ name: 'foo', deleted: false })).save();
   });
   after(async function() {
-    await Model.remove();
+    await Model.deleteMany({});
   });
   describe('.connection', function() {
     const { connection } = resolvers;

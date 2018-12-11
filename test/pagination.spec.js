@@ -30,11 +30,11 @@ describe('pagination', function() {
     models = await createModels();
   });
   after(async function() {
-    await Model.remove();
+    await Model.deleteMany({});
   });
 
   beforeEach(function() {
-    sandbox.spy(Model, 'count');
+    sandbox.spy(Model, 'countDocuments');
     sandbox.spy(Model, 'find');
     sandbox.spy(Model, 'findOne');
     sandbox.spy(Pagination.prototype, 'getEdges');
@@ -103,7 +103,7 @@ describe('pagination', function() {
       const r1 = await paginated.getTotalCount();
       const r2 = await paginated.getTotalCount();
       expect(r1).to.equal(r2);
-      sinon.assert.calledOnce(Model.count);
+      sinon.assert.calledOnce(Model.countDocuments);
     });
   });
 
