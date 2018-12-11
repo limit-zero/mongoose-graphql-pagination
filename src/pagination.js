@@ -62,7 +62,7 @@ class Pagination {
    * @return {Promise}
    */
   getTotalCount() {
-    const run = () => this.Model.count(this.criteria);
+    const run = () => this.Model.countDocuments(this.criteria);
     if (!this.promises.count) {
       this.promises.count = run();
     }
@@ -123,7 +123,7 @@ class Pagination {
         .sort(this.sort.value)
         .collation(this.sort.collation)
         .comment(this.createComment('hasNextPage'))
-        .count();
+        .countDocuments();
       return Boolean(count);
     };
     if (!this.promises.nextPage) {
