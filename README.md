@@ -4,7 +4,6 @@ Adds support for Relay-like cursor pagination with Mongoose models/documents. Th
 ## Install
 `yarn add @limit0/mongoose-graphql-pagination`
 
-
 ## Usage
 Pagination, type-ahead, and Elastic+Mongoose pagination support are available via the `Pagination`, `TypeAhead` and `SearchPagination` classes, respectively. **All classes should be considered, "single use," and should be instantiated once per query or request.**
 
