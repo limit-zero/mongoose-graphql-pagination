@@ -1,7 +1,4 @@
 const deepMerge = require('deepmerge');
-const isPlainObject = require('is-plain-object');
-const Sort = require('./sort');
-const Limit = require('./limit');
 
 class Pagination {
   /**
@@ -17,17 +14,13 @@ class Pagination {
    *                                         Should not be an obfuscated cursor value.
    * @param {object} params.sort The sort parameters
    * @param {string} params.sort.field The sort field name.
-   * @param {string} params.sort.order The sort order. Either 1/-1 or asc/desc.
-   * @param {?object} params.projection The field projection (fields to return).
-   * @param {object} options Additional sort, limit and criteria merge options.
-   *                         See the corresponding classes.
+   * @param {string} params.sort.order The sort order. 1/-1.
    */
   constructor(Model, {
     baseAggregatePipeline = {},
     pagination = {},
     sort = {},
-    projection,
-  } = {}, options = {}) {
+  } = {}) {
     this.promises = {};
 
     // Set the Model to use for querying.
@@ -37,16 +30,10 @@ class Pagination {
     this.baseAggregatePipeline = baseAggregatePipeline;
 
     // Set the limit and after cursor.
-    const { first, after } = pagination;
-    this.first = new Limit(first, options.limit);
-    this.after = after;
+    this.pagination = pagination;
 
     // Set the sort criteria.
-    const { field, order } = sort;
-    this.sort = new Sort(field, order, options.sort);
-
-    // Set the projection.
-    this.projection = projection;
+    this.sort = sort;
   }
 
   /**
@@ -154,7 +141,7 @@ class Pagination {
     const run = async () => {
       const { field, order } = this.sort;
 
-      const filter = deepMerge({}, this.criteria, this.mergeOptions);
+      const filter = this.criteria;
       const limits = {};
       const ors = [];
 
