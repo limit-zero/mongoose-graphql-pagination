@@ -26,14 +26,32 @@ class Pagination {
     // Set the Model to use for querying.
     this.Model = Model;
 
-    // Set/merge any query criteria.
-    this.baseAggregationPipeline = baseAggregationPipeline;
+    // Set base aggregation pipeline.
+    this.aggregationPipeline = baseAggregationPipeline;
 
-    // Set the limit and after cursor.
-    this.pagination = pagination;
+    // Set after cursor.
+    if (pagination.after !== undefined) {
+      this.aggregationPipeline.push({
+        $match: {
+          _id: { $gt: ObjectId(pagination.after) }
+        }
+      });
+    }
 
-    // Set the sort criteria.
-    this.sort = sort;
+    // Set sorting.
+    if (sort.field !== undefined && sort.order !== undefined) {
+      aggregatePipeline.push(
+        {
+          $sort: { [sort.field]: sort.order }
+        }
+      );
+    }
+
+    // Set page limit (per page).
+    this.perPage = pagination.first ?? 25;
+    this.aggregationPipeline.push({
+      $limit: this.perPage
+    });
   }
 
   /**
@@ -43,7 +61,14 @@ class Pagination {
    * @return {Promise}
    */
   getTotalCount() {
-    const run = () => this.Model.countDocuments(this.criteria);
+    const run = async () => {
+      let aggregationPipelineWithoutPageLimit = this.aggregatePipeline.slice(0, -1);
+      aggregationPipelineWithoutPageLimit.push({
+        $count: "count"
+      });
+      const count = await this.Model.aggregate(aggregationPipelineWithoutPageLimit)["count"];
+      return count;
+    };
     if (!this.promises.count) {
       this.promises.count = run();
     }
@@ -57,12 +82,7 @@ class Pagination {
    */
   getEdges() {
     const run = async () => {
-      const criteria = await this.getQueryCriteria();
-      const docs = await this.Model.find(criteria, this.projection)
-        .sort(this.sort.value)
-        .limit(this.first.value)
-        .collation(this.sort.collation)
-        .comment(this.createComment('getEdges'));
+      const docs = await this.Model.aggregate(this.aggregatePipeline);
       return docs.map(doc => ({ node: doc, cursor: doc.id }));
     };
     if (!this.promises.edge) {
@@ -96,88 +116,14 @@ class Pagination {
    */
   async hasNextPage() {
     const run = async () => {
-      const criteria = await this.getQueryCriteria();
-      const count = await this.Model.find(criteria)
-        .select({ _id: 1 })
-        .skip(this.first.value)
-        .limit(1)
-        .sort(this.sort.value)
-        .collation(this.sort.collation)
-        .comment(this.createComment('hasNextPage'))
-        .countDocuments();
-      return Boolean(count);
+      let aggregationPipelineWithoutPageLimit = this.aggregatePipeline.slice(0, -1);
+      const count = await this.Model.aggregate(aggregationPipelineWithoutPageLimit)["count"];
+      return count > this.perPage;
     };
     if (!this.promises.nextPage) {
       this.promises.nextPage = run();
     }
     return this.promises.nextPage;
-  }
-
-  /**
-   * @private
-   * @param {string} id
-   * @param {object} fields
-   * @return {Promise}
-   */
-  findCursorModel(id, fields) {
-    const run = async () => {
-      const doc = await this.Model.findOne({ _id: id })
-        .select(fields)
-        .comment(this.createComment('findCursorModel'));
-      if (!doc) throw new Error(`No record found for ID '${id}'`);
-      return doc;
-    };
-    if (!this.promises.model) {
-      this.promises.model = run();
-    }
-    return this.promises.model;
-  }
-
-  /**
-   * @private
-   * @return {Promise}
-   */
-  getQueryCriteria() {
-    const run = async () => {
-      const { field, order } = this.sort;
-
-      const filter = this.criteria;
-      const limits = {};
-      const ors = [];
-
-      if (this.after) {
-        let doc;
-        const op = order === 1 ? '$gt' : '$lt';
-        if (field === '_id') {
-          // Sort by ID only.
-          doc = await this.findCursorModel(this.after, { _id: 1 });
-          filter._id = { [op]: doc.id };
-        } else {
-          doc = await this.findCursorModel(this.after, { [field]: 1 });
-          limits[op] = doc.get(field);
-          ors.push({
-            [field]: doc.get(field),
-            _id: { [op]: doc.id },
-          });
-          filter.$or = [{ [field]: limits }, ...ors];
-        }
-      }
-      return filter;
-    };
-
-    if (!this.promises.criteria) {
-      this.promises.criteria = run();
-    }
-    return this.promises.criteria;
-  }
-
-  /**
-   * @private
-   * @param {string} method
-   * @return {string}
-   */
-  createComment(method) {
-    return `Pagination: ${this.Model.modelName} - ${method}`;
   }
 }
 
