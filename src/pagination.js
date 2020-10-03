@@ -22,6 +22,7 @@ class Pagination {
     baseAggregationPipeline = {},
     pagination = {},
     sort = {},
+    filters = [],
   } = {}) {
     this.promises = {};
 
@@ -40,11 +41,23 @@ class Pagination {
       });
     }
 
+    for (let filter of filters) {
+      this.aggregationPipeline.push(
+        {
+          $match: {
+            [ filter.field ]: filter.value
+          },
+        }
+      );
+    }
+
     // Set sorting.
     if (Boolean(sort.field) && Boolean(sort.order)) {
       this.aggregationPipeline.push(
         {
-          $sort: { [sort.field]: sort.order }
+          $sort: {
+            [sort.field]: sort.order
+          }
         }
       );
     }
@@ -69,7 +82,7 @@ class Pagination {
         $count: "count"
       });
       const countResults = await this.Model.aggregate(aggregationPipelineNoPagination);
-      const count = countResults[0]["count"];
+      const count = (countResults.length > 0) ? countResults[0]["count"] : 0;
       return count;
     };
     if (!this.promises.count) {
@@ -124,7 +137,7 @@ class Pagination {
         $count: "count"
       });
       const countResults = await this.Model.aggregate(aggregationPipelineNoPerPage);
-      const count = countResults[0]["count"]
+      const count = (countResults.length > 0) ? countResults[0]["count"] : 0;
       return count > this.perPage;
     };
     if (!this.promises.nextPage) {
