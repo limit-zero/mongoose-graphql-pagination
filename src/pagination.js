@@ -3,15 +3,13 @@ const isPlainObject = require('is-plain-object');
 const Sort = require('./sort');
 const Limit = require('./limit');
 
-const mergeOptions = { isMergeableObject: isPlainObject };
-
 class Pagination {
   /**
    * Constructor.
    *
    * @param {Model} Model The Mongoose model to query against.
    * @param {object} params The criteria, pagination, and sort params.
-   * @param {object} params.criteria Query criteria to apply to the paginated query.
+   * @param {object} params.baseAggregatePipeline Base Aggregate Pipeline.
    * @param {object} params.pagination The pagination parameters.
    * @param {number} params.pagination.first The number of documents to return.
    *                                         Will default the the limit classes default.
@@ -25,7 +23,7 @@ class Pagination {
    *                         See the corresponding classes.
    */
   constructor(Model, {
-    criteria = {},
+    baseAggregatePipeline = {},
     pagination = {},
     sort = {},
     projection,
@@ -35,12 +33,8 @@ class Pagination {
     // Set the Model to use for querying.
     this.Model = Model;
 
-    // Sets the options for deep merging criteria object.
-    // If not set, will only merge plain objects, per `is-plain-object`.
-    this.mergeOptions = options.mergeOptions || mergeOptions;
-
     // Set/merge any query criteria.
-    this.criteria = deepMerge({}, criteria, this.mergeOptions);
+    this.baseAggregatePipeline = baseAggregatePipeline;
 
     // Set the limit and after cursor.
     const { first, after } = pagination;
