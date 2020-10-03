@@ -1,4 +1,6 @@
 const deepMerge = require('deepmerge');
+const ObjectId = require("mongoose").Types.ObjectId;
+const { getNestedValue } = require("./utils");
 
 class Pagination {
   /**
@@ -30,7 +32,7 @@ class Pagination {
     this.aggregationPipeline = baseAggregationPipeline;
 
     // Set after cursor.
-    if (pagination.after !== undefined) {
+    if (Boolean(pagination.after)) {
       this.aggregationPipeline.push({
         $match: {
           _id: { $gt: ObjectId(pagination.after) }
@@ -39,8 +41,8 @@ class Pagination {
     }
 
     // Set sorting.
-    if (sort.field !== undefined && sort.order !== undefined) {
-      aggregatePipeline.push(
+    if (Boolean(sort.field) && Boolean(sort.order)) {
+      this.aggregationPipeline.push(
         {
           $sort: { [sort.field]: sort.order }
         }
@@ -48,7 +50,7 @@ class Pagination {
     }
 
     // Set page limit (per page).
-    this.perPage = pagination.first ?? 25;
+    this.perPage = pagination.first || 25;
     this.aggregationPipeline.push({
       $limit: this.perPage
     });
@@ -62,11 +64,12 @@ class Pagination {
    */
   getTotalCount() {
     const run = async () => {
-      let aggregationPipelineWithoutPageLimit = this.aggregatePipeline.slice(0, -1);
-      aggregationPipelineWithoutPageLimit.push({
+      let aggregationPipelineNoPagination = this.aggregationPipeline.slice(0, -1).filter(item => !Boolean(getNestedValue(item, '$match._id.$gt')));
+      aggregationPipelineNoPagination.push({
         $count: "count"
       });
-      const count = await this.Model.aggregate(aggregationPipelineWithoutPageLimit)["count"];
+      const countResults = await this.Model.aggregate(aggregationPipelineNoPagination);
+      const count = countResults[0]["count"];
       return count;
     };
     if (!this.promises.count) {
@@ -82,8 +85,8 @@ class Pagination {
    */
   getEdges() {
     const run = async () => {
-      const docs = await this.Model.aggregate(this.aggregatePipeline);
-      return docs.map(doc => ({ node: doc, cursor: doc.id }));
+      const docs = await this.Model.aggregate(this.aggregationPipeline);
+      return docs.map(doc => ({ node: doc, cursor: doc._id }));
     };
     if (!this.promises.edge) {
       this.promises.edge = run();
@@ -116,8 +119,12 @@ class Pagination {
    */
   async hasNextPage() {
     const run = async () => {
-      let aggregationPipelineWithoutPageLimit = this.aggregatePipeline.slice(0, -1);
-      const count = await this.Model.aggregate(aggregationPipelineWithoutPageLimit)["count"];
+      let aggregationPipelineNoPerPage = this.aggregationPipeline.slice(0, -1);
+      aggregationPipelineNoPerPage.push({
+        $count: "count"
+      });
+      const countResults = await this.Model.aggregate(aggregationPipelineNoPerPage);
+      const count = countResults[0]["count"]
       return count > this.perPage;
     };
     if (!this.promises.nextPage) {
