@@ -23,6 +23,7 @@ class Pagination {
     pagination = {},
     sort = {},
     filters = [],
+    search = null,
   } = {}) {
     this.promises = {};
 
@@ -31,6 +32,9 @@ class Pagination {
 
     // Set base aggregation pipeline.
     this.aggregationPipeline = baseAggregationPipeline;
+
+    // Search programmatically later (Azure Cosmos DB compatibility).
+    this.search = search;
 
     // Set after cursor.
     if (Boolean(pagination.after)) {
@@ -78,6 +82,10 @@ class Pagination {
   getTotalCount() {
     const run = async () => {
       let aggregationPipelineNoPagination = this.aggregationPipeline.slice(0, -1).filter(item => !Boolean(getNestedValue(item, '$match._id.$gt')));
+      if (Boolean(this.search)) {
+        const results = await this.Model.aggregate(aggregationPipelineNoPagination);
+        return this.find(results, this.search).length;
+      }
       aggregationPipelineNoPagination.push({
         $count: "count"
       });
@@ -98,7 +106,10 @@ class Pagination {
    */
   getEdges() {
     const run = async () => {
-      const docs = await this.Model.aggregate(this.aggregationPipeline);
+      let docs = await this.Model.aggregate(this.aggregationPipeline);
+      if (Boolean(this.search)) {
+        docs = this.find(docs, this.search);
+      }
       return docs.map(doc => ({ node: doc, cursor: doc._id }));
     };
     if (!this.promises.edge) {
@@ -144,6 +155,28 @@ class Pagination {
       this.promises.nextPage = run();
     }
     return this.promises.nextPage;
+  }
+
+  /**
+   *
+   * Filter Mongoose results that contains specified string
+   * @param results Mongoose results.
+   * @param search  string to find (supports regex)
+   *
+   * @return Mongoose results
+   */
+  find(results, search) {
+    let regex = new RegExp(search);
+
+    results = results.filter(function(result) {
+      for (let value of Object.values(result)) {
+        if (regex.exec(value)) {
+          return true;
+        }
+      }
+      return false;
+    });
+    return results;
   }
 }
 
