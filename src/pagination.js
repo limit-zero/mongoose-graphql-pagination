@@ -6,7 +6,7 @@ class Pagination {
    *
    * @param {Model} Model The Mongoose model to query against.
    * @param {object} params The criteria, pagination, and sort params.
-   * @param {object} params.baseAggregatePipeline Base Aggregate Pipeline.
+   * @param {object} params.baseAggregationPipeline Base Aggregation Pipeline.
    * @param {object} params.pagination The pagination parameters.
    * @param {number} params.pagination.first The number of documents to return.
    *                                         Will default the the limit classes default.
@@ -17,7 +17,7 @@ class Pagination {
    * @param {string} params.sort.order The sort order. 1/-1.
    */
   constructor(Model, {
-    baseAggregatePipeline = {},
+    baseAggregationPipeline = {},
     pagination = {},
     sort = {},
   } = {}) {
@@ -27,7 +27,7 @@ class Pagination {
     this.Model = Model;
 
     // Set/merge any query criteria.
-    this.baseAggregatePipeline = baseAggregatePipeline;
+    this.baseAggregationPipeline = baseAggregationPipeline;
 
     // Set the limit and after cursor.
     this.pagination = pagination;
