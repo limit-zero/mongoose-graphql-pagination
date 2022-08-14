@@ -62,7 +62,7 @@ class Pagination {
    * @return {Promise}
    */
   getTotalCount() {
-    const run = () => this.Model.countDocuments(this.criteria);
+    const run = async () => this.Model.countDocuments(this.criteria);
     if (!this.promises.count) {
       this.promises.count = run();
     }
